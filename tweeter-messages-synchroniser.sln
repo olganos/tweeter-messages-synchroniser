@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30114.105
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Synchroniser", "Synchroniser\Synchroniser.csproj", "{051F0E7B-1FCA-4A48-8DA7-7D1F1477C0A3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Core", "Core\Core.csproj", "{A6F14772-5A82-4FC1-BF80-DFF495C0D48A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Infrastructure", "Infrastructure\Infrastructure.csproj", "{94E2DF5A-416C-464C-9D07-5286295EAB7D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{051F0E7B-1FCA-4A48-8DA7-7D1F1477C0A3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{051F0E7B-1FCA-4A48-8DA7-7D1F1477C0A3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{051F0E7B-1FCA-4A48-8DA7-7D1F1477C0A3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{051F0E7B-1FCA-4A48-8DA7-7D1F1477C0A3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A6F14772-5A82-4FC1-BF80-DFF495C0D48A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A6F14772-5A82-4FC1-BF80-DFF495C0D48A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A6F14772-5A82-4FC1-BF80-DFF495C0D48A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A6F14772-5A82-4FC1-BF80-DFF495C0D48A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{94E2DF5A-416C-464C-9D07-5286295EAB7D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{94E2DF5A-416C-464C-9D07-5286295EAB7D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{94E2DF5A-416C-464C-9D07-5286295EAB7D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{94E2DF5A-416C-464C-9D07-5286295EAB7D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
