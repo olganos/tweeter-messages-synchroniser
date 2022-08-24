@@ -3,6 +3,7 @@ using Core;
 using Infrastructure.Consumers;
 using Infrastructure.Handlers;
 using Infrastructure.Repositories;
+using Synchroniser.BackgroundServices;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,7 +18,8 @@ builder.Services.AddSingleton<IMessageRepository>(sp => new MessageRepository(
         ?? builder.Configuration.GetValue<string>("MongoDbSettings:DbTweetCollectionName")
 ));
 
-builder.Services.AddHostedService<ConsumerCreateTweetService>();
+builder.Services.AddHostedService<BackgroundCreateTweetService>();
+builder.Services.AddHostedService<BackgroundAddReplyService>();
 
 builder.Services.AddSingleton(new KafkaTopicsConfig(
     Environment.GetEnvironmentVariable("KAFKA_CREATE_TWEET_TOPIC_NAME")

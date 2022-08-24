@@ -1,21 +1,24 @@
 using Core;
 using Core.Commands;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
+using Infrastructure.Consumers;
 
-namespace Infrastructure.Consumers;
+namespace Synchroniser.BackgroundServices;
 
-public class ConsumerCreateTweetService : BackgroundService
+public class BackgroundCreateTweetService : BackgroundService
 {
     private readonly KafkaTopicsConfig _topicsConfig;
+    private readonly IServiceProvider _services;
 
-    public ConsumerCreateTweetService(IServiceProvider services, KafkaTopicsConfig topicsConfig)
+    public BackgroundCreateTweetService(IServiceProvider services, KafkaTopicsConfig topicsConfig)
     {
-        Services = services;
+        _services = services;
         _topicsConfig = topicsConfig;
     }
 
-    public IServiceProvider Services { get; }
+    public override async Task StopAsync(CancellationToken stoppingToken)
+    {
+        await base.StopAsync(stoppingToken);
+    }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -24,7 +27,7 @@ public class ConsumerCreateTweetService : BackgroundService
 
     private async Task DoWork(CancellationToken stoppingToken)
     {
-        using var scope = Services.CreateScope();
+        using var scope = _services.CreateScope();
 
         var scopedProcessingService = scope.ServiceProvider.GetRequiredService<ITweetConsumer>();
 
@@ -32,10 +35,5 @@ public class ConsumerCreateTweetService : BackgroundService
             _topicsConfig.CreateTweetTopicName,
             stoppingToken
         );
-    }
-
-    public override async Task StopAsync(CancellationToken stoppingToken)
-    {
-        await base.StopAsync(stoppingToken);
     }
 }

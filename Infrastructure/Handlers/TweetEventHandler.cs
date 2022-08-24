@@ -5,70 +5,6 @@ using Infrastructure.Exceptions;
 
 namespace Infrastructure.Handlers
 {
-    //public class TweetEventHandler : ITweetEventHandler
-    //{
-    //    private readonly IMessageRepository _messageRepository;
-
-    //    public TweetEventHandler(
-    //        IMessageRepository messageRepository)
-    //    {
-    //        _messageRepository = messageRepository;
-    //    }
-
-    //    public Task OnAsync(CreateTweetCommand command, CancellationToken cancellationToken)
-    //    {
-    //        throw new NotImplementedException();
-    //    }
-
-    //    public Task OnAsync(AddReplyCommand command, CancellationToken cancellationToken)
-    //    {
-    //        throw new NotImplementedException();
-    //    }
-
-    //    //public async Task SendCommandAsync(CreateTweetCommand command, CancellationToken cancellationToken)
-    //    //{
-    //    //    //await _consumer.ConsumeAsync(_handlerConfig.CreateTweetTopicName, command, cancellationToken);
-    //    //}
-
-    //    //public async Task SendCommandAsync(AddReplyCommand command, CancellationToken cancellationToken)
-    //    //{
-    //    //    var tweetDb = await _messageRepository.GetOneAsync(command.TweetId, cancellationToken);
-
-    //    //    if (tweetDb == null)
-    //    //    {
-    //    //        throw new TweetNotFoundExeption("Tweet not found");
-    //    //    }
-
-    //    //    //await _consumer.ConsumeAsync(_handlerConfig.AddReplyTopicName, command, cancellationToken);
-    //    //}
-
-    //    // public async Task SendCommandAsync(UpdateTweetCommand command, CancellationToken cancellationToken)
-    //    // {
-    //    //     var tweetDb = await _messageRepository.GetOneAsync(command.UserName, command.TweetId, cancellationToken);
-
-    //    //     if (tweetDb == null)
-    //    //     {
-    //    //         throw new TweetNotFoundExeption("Tweet not found");
-    //    //     }
-
-    //    //     tweetDb.Text = command.Text;
-
-    //    //     await _messageRepository.EditAsync(tweetDb, cancellationToken);
-    //    // }
-
-    //    // public async Task SendCommandAsync(DeleteTweetCommand command, CancellationToken cancellationToken)
-    //    // {
-    //    //     var tweetDb = await _messageRepository.GetOneAsync(command.TweetId, cancellationToken);
-
-    //    //     if (tweetDb == null)
-    //    //     {
-    //    //         throw new TweetNotFoundExeption("Tweet not found");
-    //    //     }
-
-    //    //     await _messageRepository.DeleteAsync(command.UserName, command.TweetId, cancellationToken);
-    //    // }
-    // }
-
     public class TweetEventHandler : ITweetEventHandler
     {
         private readonly IMessageRepository _messageRepository;
@@ -106,9 +42,29 @@ namespace Infrastructure.Handlers
             await _messageRepository.CreateAsync(newTweet, cancellationToken);
         }
 
-        private Task OnAddReplyAsync(AddReplyCommand command, CancellationToken cancellationToken)
+        private async Task OnAddReplyAsync(AddReplyCommand command, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            var tweetDb = await _messageRepository.GetOneAsync(command.TweetId, cancellationToken);
+
+            if (tweetDb == null)
+            {
+                return;
+            }
+
+            tweetDb.Text = command.Text;
+            if (tweetDb.Replies == null)
+            {
+                tweetDb.Replies = new List<Reply>();
+            }
+
+            tweetDb.Replies.Add(
+                new Reply
+                {
+                    Text = command.Text,
+                    UserName = command.UserName,
+                });
+
+            await _messageRepository.EditAsync(tweetDb, cancellationToken);
         }
     }
 }
