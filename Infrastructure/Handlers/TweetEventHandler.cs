@@ -38,33 +38,29 @@ namespace Infrastructure.Handlers
             {
                 Text = command.Text,
                 UserName = command.UserName,
+                Created = command.Created,
             };
             await _messageRepository.CreateAsync(newTweet, cancellationToken);
         }
 
         private async Task OnAddReplyAsync(AddReplyCommand command, CancellationToken cancellationToken)
         {
-            var tweetDb = await _messageRepository.GetOneAsync(command.TweetId, cancellationToken);
+            var tweetDb = await _messageRepository.TweetExistsAsync(command.TweetId, cancellationToken);
 
-            if (tweetDb == null)
+            if (!tweetDb)
             {
                 return;
             }
 
-            tweetDb.Text = command.Text;
-            if (tweetDb.Replies == null)
+            var newReply = new Reply
             {
-                tweetDb.Replies = new List<Reply>();
-            }
+                Text = command.Text,
+                TweetId = command.TweetId,
+                UserName = command.UserName,
+                Created = command.Created,
+            };
 
-            tweetDb.Replies.Add(
-                new Reply
-                {
-                    Text = command.Text,
-                    UserName = command.UserName,
-                });
-
-            await _messageRepository.EditAsync(tweetDb, cancellationToken);
+            await _messageRepository.AddReplyAsync(newReply, cancellationToken);
         }
     }
 }
