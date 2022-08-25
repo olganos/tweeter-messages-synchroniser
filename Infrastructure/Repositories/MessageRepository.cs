@@ -11,8 +11,8 @@ namespace Infrastructure.Repositories
         private readonly IMongoCollection<Tweet> _tweetsCollection;
         private readonly IMongoCollection<Reply> _repliesCollection;
 
-        // todo: maybe to devide on two repos. But read about mongo drive. It needs a singliton
-        public MessageRepository(string connectionString, string databaseName, string tweetCollectionName, string replyCollectionName)
+        public MessageRepository(string connectionString, string databaseName, 
+            string tweetCollectionName, string replyCollectionName)
         {
             _mongoClient = new MongoClient(connectionString);
             var database = _mongoClient.GetDatabase(databaseName);
