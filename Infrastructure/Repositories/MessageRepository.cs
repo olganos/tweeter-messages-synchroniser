@@ -12,12 +12,12 @@ namespace Infrastructure.Repositories
         private readonly IMongoCollection<Reply> _repliesCollection;
 
         // todo: maybe to devide on two repos. But read about mongo drive. It needs a singliton
-        public MessageRepository(string connectionString, string databaseName, string tweetCollectionName)
+        public MessageRepository(string connectionString, string databaseName, string tweetCollectionName, string replyCollectionName)
         {
             _mongoClient = new MongoClient(connectionString);
             var database = _mongoClient.GetDatabase(databaseName);
             _tweetsCollection = database.GetCollection<Tweet>(tweetCollectionName);
-            _repliesCollection = database.GetCollection<Reply>("Reply");
+            _repliesCollection = database.GetCollection<Reply>(replyCollectionName);
         }
 
         public async Task<bool> TweetExistsAsync(string id, CancellationToken cancellationToken)
