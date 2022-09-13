@@ -1,6 +1,7 @@
 ﻿using Core;
 using Core.Commands;
 using Core.Entities;
+
 using Infrastructure.Exceptions;
 
 namespace Infrastructure.Handlers
@@ -27,6 +28,9 @@ namespace Infrastructure.Handlers
                 case AddReplyCommand:
                     await OnAddReplyAsync(command as AddReplyCommand, cancellationToken);
                     break;
+                case AddUserCommand:
+                    await OnAddUserAsync(command as AddUserCommand, cancellationToken);
+                    break;
                 default:
                     throw new ArgumentException("Wrong command type");
             }
@@ -45,9 +49,9 @@ namespace Infrastructure.Handlers
 
         private async Task OnAddReplyAsync(AddReplyCommand command, CancellationToken cancellationToken)
         {
-            var tweetDb = await _messageRepository.TweetExistsAsync(command.TweetId, cancellationToken);
+            var tweetExists = await _messageRepository.TweetExistsAsync(command.TweetId, cancellationToken);
 
-            if (!tweetDb)
+            if (!tweetExists)
             {
                 return;
             }
@@ -61,6 +65,26 @@ namespace Infrastructure.Handlers
             };
 
             await _messageRepository.AddReplyAsync(newReply, cancellationToken);
+        }
+
+        private async Task OnAddUserAsync(AddUserCommand command, CancellationToken cancellationToken)
+        {
+            var userExists = await _messageRepository.TweetExistsAsync(command.UserName, cancellationToken);
+
+            // To avoid dupplications
+            if (userExists)
+            {
+                return;
+            }
+
+            var newUser = new User
+            {
+                UserName = command.UserName,
+                FirstName = command.FirstName,
+                LastName = command.LastName
+            };
+
+            await _messageRepository.AddUserAsync(newUser, cancellationToken);
         }
     }
 }

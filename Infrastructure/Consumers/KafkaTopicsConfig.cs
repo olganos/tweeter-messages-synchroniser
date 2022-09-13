@@ -6,14 +6,17 @@ namespace Infrastructure.Consumers
     {
         public KafkaTopicsConfig(
             string createTweetTopicName,
-            string addReplyTopicName
+            string addReplyTopicName,
+            string addUserTopicName
         )
         {
             CreateTweetTopicName = createTweetTopicName;
             AddReplyTopicName = addReplyTopicName;
+            AddUserTopicName = addUserTopicName;
         }
 
         public string CreateTweetTopicName { get; }
         public string AddReplyTopicName { get; }
+        public string AddUserTopicName { get; }
     }
 }
