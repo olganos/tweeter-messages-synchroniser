@@ -1,7 +1,14 @@
 ﻿using Confluent.Kafka;
+
 using Core;
 using Core.Commands;
+
+using MongoDB.Driver;
+
+using Serilog;
+
 using System.Text.Json;
+using System.Threading;
 
 namespace Infrastructure.Consumers
 {
@@ -10,20 +17,24 @@ namespace Infrastructure.Consumers
         private readonly ConsumerConfig _config;
         private readonly ITweetEventHandler _tweetEventHandler;
 
-        public KafkaConsumer(ConsumerConfig consumerConfig, ITweetEventHandler tweetEventHandler)
+        public KafkaConsumer(
+            ConsumerConfig consumerConfig,
+            ITweetEventHandler tweetEventHandler)
         {
             _config = consumerConfig;
             _tweetEventHandler = tweetEventHandler;
         }
 
-        public async Task StartConsumerAsync<T>(string topicName, CancellationToken cancellationToken)
+        public async Task StartConsumerAsync(string[] topicNames, CancellationToken cancellationToken)
         {
+            Log.Logger.Information($"Starting consumer for topics");
+
             using var consumer = new ConsumerBuilder<string, string>(_config)
                     .SetKeyDeserializer(Deserializers.Utf8)
                     .SetValueDeserializer(Deserializers.Utf8)
                     .Build();
 
-            consumer.Subscribe(topicName);
+            consumer.Subscribe(topicNames);
 
             while (!cancellationToken.IsCancellationRequested)
             {
@@ -36,25 +47,36 @@ namespace Infrastructure.Consumers
 
                 try
                 {
-                    var command = JsonSerializer.Deserialize<T>(consumeResult.Message.Value);
+                    Log.Logger.Debug(JsonSerializer.Serialize(consumeResult));
 
-                    if (command == null)
+                    switch (consumeResult.Topic)
                     {
-                        continue;
+                        case "CreateTweet":
+                            var createTweetCommand = JsonSerializer.Deserialize<CreateTweetCommand>(consumeResult.Message.Value);
+                            await _tweetEventHandler.OnAsync<CreateTweetCommand>(createTweetCommand, cancellationToken);
+                            break;
+                        case "AddReply":
+                            var addReplyCommand = JsonSerializer.Deserialize<AddReplyCommand>(consumeResult.Message.Value);
+                            await _tweetEventHandler.OnAsync<AddReplyCommand>(addReplyCommand, cancellationToken);
+                            break;
+                        case "AddUser":
+                            var addUserCommand = JsonSerializer.Deserialize<AddUserCommand>(consumeResult.Message.Value);
+                            await _tweetEventHandler.OnAsync<AddUserCommand>(addUserCommand, cancellationToken);
+                            break;
+                        default:
+                            throw new ArgumentException("Wrong command type");
                     }
-
-                    await _tweetEventHandler.OnAsync<T>(command, cancellationToken);
                 }
 
-                catch (OperationCanceledException)
+                catch (OperationCanceledException e)
                 {
-                    // todo: maybe add log
+                    Log.Logger.Error(e.Message);
                     break;
                 }
 
                 catch (ConsumeException e)
                 {
-                    // todo: maybe add log
+                    Log.Logger.Error(e.Message);
                     if (e.Error.IsFatal)
                     {
                         break;
@@ -62,7 +84,7 @@ namespace Infrastructure.Consumers
                 }
                 catch (Exception e)
                 {
-                    // todo: maybe add log
+                    Log.Logger.Error(e.Message);
                     break;
                 }
 

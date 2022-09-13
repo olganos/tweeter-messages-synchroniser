@@ -2,6 +2,6 @@
 {
     public interface ITweetConsumer
     {
-        Task StartConsumerAsync<T>(string topicName, CancellationToken cancellationToken);
+        Task StartConsumerAsync(string[] topicNames, CancellationToken cancellationToken);
     }
 }

@@ -10,9 +10,7 @@ namespace Infrastructure.Handlers
     {
         private readonly IMessageRepository _messageRepository;
 
-        public TweetEventHandler(
-            IMessageRepository messageRepository
-            )
+        public TweetEventHandler(IMessageRepository messageRepository)
         {
             _messageRepository = messageRepository;
         }
@@ -69,7 +67,7 @@ namespace Infrastructure.Handlers
 
         private async Task OnAddUserAsync(AddUserCommand command, CancellationToken cancellationToken)
         {
-            var userExists = await _messageRepository.TweetExistsAsync(command.UserName, cancellationToken);
+            var userExists = await _messageRepository.UserExistsAsync(command.UserName, cancellationToken);
 
             // To avoid dupplications
             if (userExists)

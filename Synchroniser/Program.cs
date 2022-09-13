@@ -31,9 +31,7 @@ try
             ?? builder.Configuration.GetValue<string>("MongoDbSettings:DbUserCollectionName")
     ));
 
-    builder.Services.AddHostedService<BackgroundCreateTweetService>();
-    builder.Services.AddHostedService<BackgroundAddReplyService>();
-    builder.Services.AddHostedService<BackgroundAddUserService>();
+    builder.Services.AddSingleton<IHostedService, BackgroundKafkaConsumerService>();
 
     builder.Services.AddSingleton(new KafkaTopicsConfig(
         Environment.GetEnvironmentVariable("KAFKA_CREATE_TWEET_TOPIC_NAME")

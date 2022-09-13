@@ -1,16 +1,20 @@
 using Core;
 using Core.Commands;
+
 using Infrastructure.Consumers;
+
+using Serilog;
 
 namespace Synchroniser.BackgroundServices;
 
-public class BackgroundAddReplyService : BackgroundService
+public class BackgroundKafkaConsumerService : BackgroundService
 {
     private readonly KafkaTopicsConfig _topicsConfig;
     private readonly IServiceProvider _services;
 
-    public BackgroundAddReplyService(IServiceProvider services, KafkaTopicsConfig topicsConfig)
+    public BackgroundKafkaConsumerService(IServiceProvider services, KafkaTopicsConfig topicsConfig)
     {
+        Log.Logger.Information("Create kafka consumer service");
         _services = services;
         _topicsConfig = topicsConfig;
     }
@@ -31,8 +35,8 @@ public class BackgroundAddReplyService : BackgroundService
 
         var scopedProcessingService = scope.ServiceProvider.GetRequiredService<ITweetConsumer>();
 
-        await scopedProcessingService.StartConsumerAsync<AddReplyCommand>(
-            _topicsConfig.AddReplyTopicName,
+        await scopedProcessingService.StartConsumerAsync(
+            new[] { _topicsConfig.CreateTweetTopicName, _topicsConfig.AddReplyTopicName, _topicsConfig.AddUserTopicName },
             stoppingToken
         );
     }
