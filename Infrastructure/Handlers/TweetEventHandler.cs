@@ -39,6 +39,7 @@ namespace Infrastructure.Handlers
             var newTweet = new Tweet
             {
                 Text = command.Text,
+                Tag = command.Tag,
                 UserName = command.UserName,
                 Created = command.Created,
             };
@@ -57,6 +58,7 @@ namespace Infrastructure.Handlers
             var newReply = new Reply
             {
                 Text = command.Text,
+                Tag = command.Text,
                 TweetId = command.TweetId,
                 UserName = command.UserName,
                 Created = command.Created,
