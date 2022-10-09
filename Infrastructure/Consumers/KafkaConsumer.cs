@@ -3,12 +3,9 @@
 using Core;
 using Core.Commands;
 
-using MongoDB.Driver;
-
 using Serilog;
 
 using System.Text.Json;
-using System.Threading;
 
 namespace Infrastructure.Consumers
 {

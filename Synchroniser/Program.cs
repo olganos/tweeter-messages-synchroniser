@@ -5,16 +5,29 @@ using Infrastructure.Handlers;
 using Infrastructure.Repositories;
 using Synchroniser.BackgroundServices;
 using Serilog;
-
-Log.Logger = new LoggerConfiguration()
-    .WriteTo.Console()
-    .CreateBootstrapLogger();
-
-Log.Information("Starting up");
+using Serilog.Sinks.Elasticsearch;
 
 try
 {
     var builder = WebApplication.CreateBuilder(args);
+
+    builder.Host.UseSerilog((context, logConfiguration) =>
+    {
+        logConfiguration
+            .Enrich.FromLogContext()
+            .Enrich.WithMachineName()
+            .WriteTo.Console()
+            .WriteTo.Elasticsearch(new ElasticsearchSinkOptions(new Uri(Environment.GetEnvironmentVariable("ELASTICSEARCH_URI")
+                ?? context.Configuration["ElasticConfiguration:Uri"]))
+            {
+                IndexFormat = $"tweeter-synchroniser-logs",
+                AutoRegisterTemplate = true,
+                NumberOfShards = 2,
+                NumberOfReplicas = 1
+            }).Enrich.WithProperty("Environment", context.HostingEnvironment.EnvironmentName).ReadFrom.Configuration(context.Configuration);
+    });
+
+    Log.Information("Starting up");
 
     // Add services to the container.
 
@@ -42,13 +55,29 @@ try
             ?? builder.Configuration.GetValue<string>("KafkaSettings:AddUserTopicName")
     ));
 
-    builder.Services.AddSingleton(new ConsumerConfig
-    {
-        BootstrapServers = Environment.GetEnvironmentVariable("KAFKA_SERVER")
-            ?? builder.Configuration.GetValue<string>("KafkaSettings:BootstrapServers"),
-        EnableAutoCommit = false,
-        GroupId = "tweeter"
-    });
+    bool isDevelopment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development";
+
+    var kafkaConsumerConfig = isDevelopment
+        ? new ConsumerConfig
+        {
+            BootstrapServers = Environment.GetEnvironmentVariable("KAFKA_SERVER")
+                ?? builder.Configuration.GetValue<string>("KafkaSettings:BootstrapServers"),
+        }
+        : new ConsumerConfig
+        {
+            BootstrapServers = Environment.GetEnvironmentVariable("KAFKA_SERVER")
+                ?? builder.Configuration.GetValue<string>("KafkaSettings:BootstrapServers"),
+            SaslUsername = builder.Configuration.GetValue<string>("KafkaSettings:Key"),
+            SaslPassword = builder.Configuration.GetValue<string>("KafkaSettings:Secret"),
+            SaslMechanism = SaslMechanism.Plain,
+            SecurityProtocol = SecurityProtocol.SaslSsl,
+            AutoOffsetReset = AutoOffsetReset.Earliest
+        };
+
+    kafkaConsumerConfig.EnableAutoCommit = false;
+    kafkaConsumerConfig.GroupId = "tweeter";
+
+    builder.Services.AddSingleton(kafkaConsumerConfig);
 
     builder.Services.AddScoped<ITweetEventHandler, TweetEventHandler>();
     builder.Services.AddScoped<ITweetConsumer, KafkaConsumer>();
